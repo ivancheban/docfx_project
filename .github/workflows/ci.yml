@@ -1,19 +1,18 @@
 jobs:
-  publish-docs:
+  hello_world_job:
     runs-on: ubuntu-latest
+    name: A job to say hello
     steps:
-    - name: Chekout
-      uses: actions/checkout@v3
-    - name: Dotnet Setup
-      uses: actions/setup-dotnet@v3
+    - uses: actions/checkout@v1
+    # ...
+    - uses: nikeee/docfx-action@v1.0.0
+      name: Build Documentation
       with:
-        dotnet-version: 7.x
+        args: path/to/your/docfx.json
 
-    - run: dotnet tool update -g docfx
-    - run: docfx docfx_project/docfx.json
-
-    - name: Deploy
-    uses: peaceiris/actions-gh-pages@v3
-    with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: docs/_site
+    # Publish generated site using GitHub Pages
+    - uses: maxheld83/ghpages@master
+      name: Publish Documentation on GitHub Pages
+      env:
+        BUILD_DIR: _site # docfx's default output directory is _site
+        GH_PAT: ${{ secrets.GH_PAT }} # See https://github.com/maxheld83/ghpages
