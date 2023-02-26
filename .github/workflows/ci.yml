@@ -1,19 +1,23 @@
+name: pages
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  publish-docs:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Chekout
-      uses: actions/checkout@v3
-    - name: Dotnet Setup
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 7.x
-
-    - run: dotnet tool update -g docfx
-    - run: docfx docfx_project/docfx.json
-
-    - name: Deploy
-    uses: peaceiris/actions-gh-pages@v3
-    with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: docs/_site
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.100-preview.7.20366.6
+      - name: Build 🔧
+        run: dotnet build -p:BuildDocFx=true
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          GITHUB_TOKEN: $
+          BRANCH: gh-pages
+          FOLDER: _site
