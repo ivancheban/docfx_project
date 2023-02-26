@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - master
 
 jobs:
   deploy:
@@ -19,5 +20,5 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@releases/v3
         with:
           GITHUB_TOKEN: $
-          BRANCH: gh-pages
+          BRANCH: master
           FOLDER: _site
