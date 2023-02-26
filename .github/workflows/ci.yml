@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 5.0.100-preview.7.20366.6
+          dotnet-version: 7.x
       - name: Build 🔧
         run: dotnet build -p:BuildDocFx=true
       - name: Deploy 🚀
