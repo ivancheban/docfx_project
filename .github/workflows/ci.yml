@@ -1,23 +1,49 @@
-name: Docs Only Build
+name: Docs
 
 on:
+  push:
+    branches:
+    - main
+    - master
+    paths:
+    - src/**
+    - docfx_project/**
+    - .github/workflows/ci.yml
+  pull_request:
+    branches:
+    - main
+    paths:
+    - docfx_project/**
+    - .github/workflows/ci.yml
   workflow_dispatch:
 
 jobs:
-  build-docs:
-    name: Build Docs
-    runs-on: ubuntu-latest
+  generate-docs:
+
+    runs-on: windows-latest
+
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-    - name: Build Documentation
-      uses: nikeee/docfx-action@v1.0.0
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v1
       with:
-        args: docfx_project/docfx.json
+        dotnet-version: 6.0.x
 
-    - name: Deploy to GitHub Pages
+    - name: Setup DocFX
+      uses: crazy-max/ghaction-chocolatey@v1
+      with:
+        args: install docfx
+
+    - name: DocFX Build
+      working-directory: docfx_project
+      run: docfx .\docfx.json
+      continue-on-error: false
+
+    - name: Publish
+      if: github.event_name == 'push'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs
+        publish_dir: docfx_project/_site
+        force_orphan: true
