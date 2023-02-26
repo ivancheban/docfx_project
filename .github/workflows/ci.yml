@@ -1,3 +1,11 @@
+name: ci 
+on:
+  push:
+    branches:
+      - master 
+      - main
+permissions:
+  contents: write
 jobs:
   hello_world_job:
     runs-on: ubuntu-latest
