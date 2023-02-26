@@ -1,24 +1,99 @@
-name: pages
+name: Build Documentation
+
 on:
+  repository_dispatch:
   push:
     branches:
-      - main
       - master
+      - documentation-ci-tes
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-18.04
+
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v3
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 7.x
-      - name: Build 🔧
-        run: dotnet build -p:BuildDocFx=true
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@releases/v3
-        with:
-          GITHUB_TOKEN: $
-          BRANCH: gh-pages
-          FOLDER: _site
+
+    # Checkout all repos
+    - name: Checkout api.stansassets.com
+      uses: actions/checkout@v2
+      with:
+        path: api.stansassets.com
+
+    - name: Checkout com.stansassets.foundation
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.DOC_MGMT_TOKEN }}
+        repository: StansAssets/com.stansassets.foundation
+        path: com.stansassets.foundation
+        
+    - name: Checkout com.stansassets.facebook
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.DOC_MGMT_TOKEN }}
+        repository: StansAssets/com.stansassets.facebook
+        path: com.stansassets.facebook
+        
+    - name: Checkout com.stansassets.build
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.DOC_MGMT_TOKEN }}
+        repository: StansAssets/com.stansassets.build
+        path: com.stansassets.build
+
+    - name: Checkout Native-Plugins
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.DOC_MGMT_TOKEN }}
+        repository: StansAssets/Native-Plugins
+        path: Native-Plugins
+
+    - name: Checkout com.stansassets.google-doc-connector-pro
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.DOC_MGMT_TOKEN }}
+        repository: StansAssets/com.stansassets.google-doc-connector-pro
+        path: com.stansassets.google-doc-connector-pro
+
+    - name: Checkout com.stansassets.xcode-project
+      uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.DOC_MGMT_TOKEN }}
+        repository: StansAssets/com.stansassets.xcode-project
+        path: com.stansassets.xcode-project
+
+    - name: List work directory content
+      run: ls
+   
+    # Clear existing documentation
+    - name: Clear existing documentation
+      run: |
+        mv api.stansassets.com/docs/CNAME api.stansassets.com/
+        rm -rf api.stansassets.com/docs/*
+        mv api.stansassets.com/CNAME api.stansassets.com/docs/
+    
+    # Setup mono software
+    - name: Get mono
+      run: |
+        echo "deb https://download.mono-project.com/repo/ubuntu stable-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+        sudo apt-get update
+        sudo apt-get install mono-complete --yes
+    
+    - name: Get docfx
+      run: |
+        curl -L https://github.com/dotnet/docfx/releases/latest/download/docfx.zip -o docfx.zip
+        unzip -d .docfx docfx.zip
+    
+    # Build docs
+    - name: Build docs
+      run:  mono .docfx/docfx.exe api.stansassets.com/docfx-project/docfx.json
+    
+     # Commit and push
+    - name: Commit and push
+      run: |
+        cd api.stansassets.com
+        git config --global user.email "noreply@stansassets.com"
+        git config --global user.name "Stan's Assets Automation"
+        git add -A
+        git status
+        git commit -m "Automated docs update"
+        git push
